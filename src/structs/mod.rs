@@ -27,3 +27,19 @@ pub struct Author {
     pub url: String,
     pub id: i32,
 }
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct Prefix {
+    pub name: String,
+    pub description: String,
+    pub author: String,
+    pub version: String,
+    pub mod_list: Vec<Mod>,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct Mod {
+    pub name: String,
+    pub version: String,
+    pub file_name: String,
+}
