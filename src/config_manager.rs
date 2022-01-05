@@ -3,12 +3,6 @@ use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::path::Path;
 
-#[derive(Serialize, Deserialize, Clone)]
-pub struct Config {
-    pub minecraft_installation_path: String,
-    pub mod_download_path: String,
-}
-
 impl ConfigManager {
     pub fn new() -> Result<ConfigManager> {
         let config = ConfigManager::load_config()?;
@@ -29,6 +23,13 @@ impl ConfigManager {
             let file = File::open("config.json")?;
             return Ok(serde_json::from_reader(file)?);
         }
+    }
+
+    pub fn get_config(&mut self) -> Result<Config> {
+        if self.config.is_empty() {
+            self.config = ConfigManager::load_config()?;
+        }
+        return Ok(self.config.clone());
     }
 
     /// Creates a new config file with an empty access token and default backend address.
