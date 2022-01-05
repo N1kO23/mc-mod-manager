@@ -12,3 +12,8 @@ pub async fn search_addon(addon_id: i32) -> Result<Addon, anyhow::Error> {
     let addon: Addon = serde_json::from_str(&body)?;
     Ok(addon)
 }
+
+pub async fn download_addon(addon_id: i32, version: &str) -> Result<()> {
+    // Todo: Implement function that downloads the addon from the curseforge server.
+    Ok(())
+}

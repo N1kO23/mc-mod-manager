@@ -25,6 +25,9 @@ impl ModManager {
 
     pub fn get_downloaded_mods(&self) -> Vec<Mod> {
         // Todo: Implement function that returns a list of all the downloaded mods.
+        let file_paths = get_files(ConfigManager::get_config()?.mod_download_path.clone())?;
+        let mut mods: Vec<Mod> = Vec::new();
+
     }
 
     /// Returns boolean based on whether the mod is already downloaded or not.
@@ -41,5 +44,6 @@ impl ModManager {
 
     pub async fn download_mod(&self, id: i32, version: i32) -> Result<()> {
         // Todo: Download mod from backend and add to available_mods
+        api.download(id, version,ConfigManager::get_config()?.mod_download_path.clone()).await?;
     }
 }

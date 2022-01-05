@@ -7,10 +7,11 @@ use crate::structs::Prefix;
 
 impl PrefixManager {
     pub fn new() -> Result<PrefixManager> {
-        let prefix = PrefixManager::load_prefix()?;
+        let prefix = PrefixManager::load_prefix(ConfigManager.get_config()?.active_prefix.clone())?;
         return Ok(Self { prefix });
     }
 
+    /// Saves the prefix to the prefix file
     pub fn save_prefix(prefix: Prefix) -> Result<()> {
         let file = File::create("prefix.json")?;
         serde_json::to_writer(file, &prefix)?;
@@ -39,5 +40,21 @@ impl PrefixManager {
         };
         prefixManager::save_prefix(prefix.clone())?;
         return Ok(prefix);
+    }
+
+    pub fn add_mod_to_prefix(id: i32, &mut prefix: Prefix) -> Result<()> {
+        if !ModManager.is_downloaded(&id) {
+            ModManager.download_mod(&id).await()?;
+        }
+        prefix.mods.push(name.to_string());
+        ConfigManager::save_config(config)?;
+        return Ok(());
+    }
+
+    pub fn remove_mod_from_prefix(id: i32, &mut prefix: Prefix) -> Result<()> {
+        let mod_file = format!("{}.json", name);
+        prefix.mods.remove(name);
+        ConfigManager::save_config(config)?;
+        return Ok(());
     }
 }
