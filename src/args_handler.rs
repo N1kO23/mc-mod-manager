@@ -12,17 +12,25 @@ impl ArgsHandler {
     }
 
     pub fn get_args() -> Vec<String> {
-        let args: Vec<String> = std::env::args().collect();
+        let mut args: Vec<String> = std::env::args().collect();
+        args.remove(0);
         return args;
     }
 
     pub async fn execute_next(&mut self) -> Result<()> {
-        let command = self.args[1].clone();
-        self.args.remove(1);
+        let command = self.args[0].clone();
+        self.args.remove(0);
         match command.as_str() {
             "install" => {
-                let mod_id = self.args[2].clone();
-                let mod_version = self.args[3].clone();
+                if self.args.len() < 3 {
+                    println!("Usage: install <mod_id> <mod_version>");
+                    std::process::exit(0);
+                }
+                self.args.remove(0);
+                let mod_id = self.args[0].clone();
+                self.args.remove(0);
+                let mod_version = self.args[0].clone();
+                self.args.remove(0);
                 let mod_id = mod_id.parse::<i32>()?;
                 let mod_version = mod_version.parse::<i32>()?;
                 let mod_manager = ModManager::new()?;
@@ -35,18 +43,28 @@ impl ArgsHandler {
                     .await?;
             }
             "search" => {
-                let mod_name = self.args[2].clone();
-                println!("{:?}", ModManager::search_mod(&mod_name).await?);
+                if self.args.len() < 2 {
+                    println!("{}", "Usage is `mmm search <mod_name>`");
+                    std::process::exit(0);
+                } else {
+                    self.args.remove(0);
+                    let mod_name = self.args[0].clone();
+                    self.args.remove(0);
+                    println!("{:?}", ModManager::search_mod(&mod_name).await?);
+                }
             }
             "update" => {
                 let mut mod_manager = ModManager::new()?;
                 mod_manager.update_modlist().await?;
+                self.args.remove(0);
                 println!("Modlist updated successfully!");
             }
             "list" => {
+                self.args.remove(0);
                 println!("{:?}", ModManager::get_downloaded_mods());
             }
             "help" => {
+                self.args.remove(0);
                 self.help();
             }
             _ => {

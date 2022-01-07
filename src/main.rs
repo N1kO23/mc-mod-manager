@@ -15,7 +15,7 @@ async fn main() -> anyhow::Result<()> {
     while !args_handler.args.is_empty() {
         args_handler.execute_next().await?;
     }
-    println!("Searching for mod with ID \"{}\"", "32358");
-    println!("{:?}", api::search_addon(32358).await?);
+    // println!("Searching for mod with ID \"{}\"", "32358");
+    // println!("{:?}", api::search_addon(32358).await?);
     Ok(())
 }
