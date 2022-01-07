@@ -12,7 +12,7 @@ mod structs;
 async fn main() -> anyhow::Result<()> {
     println!("Minecraft Mod Manager v{}", VERSION);
     let mut args_handler = ArgsHandler::new()?;
-    while !args_handler.args.is_empty() {
+    while args_handler.has_next() {
         args_handler.execute_next().await?;
     }
     // println!("Searching for mod with ID \"{}\"", "32358");

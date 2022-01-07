@@ -3,34 +3,36 @@ use crate::prefix_manager::PrefixManager;
 use anyhow::Result;
 pub struct ArgsHandler {
     pub args: Vec<String>,
+    index: usize,
 }
 
 impl ArgsHandler {
     pub fn new() -> Result<ArgsHandler> {
         let args = ArgsHandler::get_args();
-        return Ok(Self { args });
+        return Ok(Self { args, index: 1 });
     }
 
     pub fn get_args() -> Vec<String> {
-        let mut args: Vec<String> = std::env::args().collect();
-        args.remove(0);
+        let args: Vec<String> = std::env::args().collect();
         return args;
     }
 
     pub async fn execute_next(&mut self) -> Result<()> {
-        let command = self.args[0].clone();
-        self.args.remove(0);
+        if self.index >= self.args.len() {
+            return Err(anyhow::anyhow!("No more arguments to process"));
+        }
+        let command = self.args[self.index].clone();
         match command.as_str() {
             "install" => {
-                if self.args.len() < 3 {
+                self.index += 1;
+                if self.index + 1 >= self.args.len() {
                     println!("Usage: install <mod_id> <mod_version>");
                     std::process::exit(0);
                 }
-                self.args.remove(0);
-                let mod_id = self.args[0].clone();
-                self.args.remove(0);
-                let mod_version = self.args[0].clone();
-                self.args.remove(0);
+                let mod_id = self.args[self.index].clone();
+                self.index += 1;
+                let mod_version = self.args[self.index].clone();
+                self.index += 1;
                 let mod_id = mod_id.parse::<i32>()?;
                 let mod_version = mod_version.parse::<i32>()?;
                 let mod_manager = ModManager::new()?;
@@ -43,28 +45,28 @@ impl ArgsHandler {
                     .await?;
             }
             "search" => {
-                if self.args.len() < 2 {
+                self.index += 1;
+                if self.index >= self.args.len() {
                     println!("{}", "Usage is `mmm search <mod_name>`");
                     std::process::exit(0);
                 } else {
-                    self.args.remove(0);
-                    let mod_name = self.args[0].clone();
-                    self.args.remove(0);
+                    let mod_name = self.args[self.index].clone();
+                    self.index += 1;
                     println!("{:?}", ModManager::search_mod(&mod_name).await?);
                 }
             }
             "update" => {
+                self.index += 1;
                 let mut mod_manager = ModManager::new()?;
                 mod_manager.update_modlist().await?;
-                self.args.remove(0);
                 println!("Modlist updated successfully!");
             }
             "list" => {
-                self.args.remove(0);
+                self.index += 1;
                 println!("{:?}", ModManager::get_downloaded_mods());
             }
             "help" => {
-                self.args.remove(0);
+                self.index += 1;
                 self.help();
             }
             _ => {
@@ -89,5 +91,17 @@ impl ArgsHandler {
         );
         println!("{}", "help - Displays this help message and exits program");
         std::process::exit(0);
+    }
+
+    pub fn get_index(&self) -> usize {
+        return self.index;
+    }
+
+    pub fn set_index(&mut self, index: usize) {
+        self.index = index;
+    }
+
+    pub fn has_next(&self) -> bool {
+        return self.index < self.args.len();
     }
 }
