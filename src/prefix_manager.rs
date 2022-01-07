@@ -1,13 +1,24 @@
+use crate::config_manager::ConfigManager;
+use crate::mod_manager::ModManager;
 use anyhow::Result;
-use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::path::Path;
 
 use crate::structs::Prefix;
 
+pub struct PrefixManager {
+    pub prefix: Prefix,
+}
+
 impl PrefixManager {
     pub fn new() -> Result<PrefixManager> {
-        let prefix = PrefixManager::load_prefix(ConfigManager.get_config()?.active_prefix.clone())?;
+        let prefix = PrefixManager::load_prefix(
+            &ConfigManager::load_config()?
+                .active_prefix
+                .unwrap()
+                .name
+                .clone(),
+        )?;
         return Ok(Self { prefix });
     }
 
@@ -19,12 +30,13 @@ impl PrefixManager {
     }
 
     /// Loads the prefix file from disk or throws an error if it doesn't exist.
-    pub fn load_prefix(name: &str, version: &str) -> Result<Prefix> {
-        let prefix_file = format!("{}-{}.json", name, version);
-        if !Path::new(prefix_file).exists() {
-            return Err("The prefix file does not exist".into());
+    pub fn load_prefix(name: &str) -> Result<Prefix> {
+        let path_string = format!("./prefixes/{}.json", name);
+        let prefix_file = Path::new(&path_string);
+        if !prefix_file.exists() {
+            return Err(anyhow::anyhow!("Prefix file does not exist"));
         } else {
-            let file = File::open("./prefixes/prefix.json")?;
+            let file = File::open(prefix_file)?;
             return Ok(serde_json::from_reader(file)?);
         }
     }
@@ -32,29 +44,30 @@ impl PrefixManager {
     /// Creates a new prefix file with an empty access token and default backend address.
     pub fn create_prefix(name: &str, author: &str) -> Result<Prefix> {
         let prefix = Prefix {
-            name: name,
+            name: name.to_string(),
             description: String::new(),
-            author: author,
+            author: author.to_string(),
             version: "0.0.1".to_string(),
             mod_list: Vec::new(),
         };
-        prefixManager::save_prefix(prefix.clone())?;
+        PrefixManager::save_prefix(prefix.clone())?;
         return Ok(prefix);
     }
 
-    pub fn add_mod_to_prefix(id: i32, &mut prefix: Prefix) -> Result<()> {
-        if !ModManager.is_downloaded(&id) {
-            ModManager.download_mod(&id).await()?;
+    pub async fn add_mod_to_prefix(&mut self, id: i32, version: i32) -> Result<()> {
+        let mod_manager = ModManager::new()?;
+        if !mod_manager.is_downloaded(id, version) {
+            mod_manager.download_mod(id, version).await?;
         }
-        prefix.mods.push(name.to_string());
-        ConfigManager::save_config(config)?;
+        let addon = mod_manager.get_mod(id, version)?;
+        self.prefix.mod_list.push(addon);
+        PrefixManager::save_prefix(self.prefix.clone())?;
         return Ok(());
     }
 
-    pub fn remove_mod_from_prefix(id: i32, &mut prefix: Prefix) -> Result<()> {
-        let mod_file = format!("{}.json", name);
-        prefix.mods.remove(name);
-        ConfigManager::save_config(config)?;
+    pub fn remove_mod_from_prefix(&mut self, id: i32) -> Result<()> {
+        // TODO: Implement function that removes the mod from the prefix
+        PrefixManager::save_prefix(self.prefix.clone())?;
         return Ok(());
     }
 }

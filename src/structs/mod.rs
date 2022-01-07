@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 pub struct Config {
     pub minecraft_installation_path: PathBuf,
     pub mod_download_path: PathBuf,
-    pub active_prefix: Prefix,
+    pub active_prefix: Option<Prefix>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -47,11 +47,11 @@ pub struct Prefix {
     pub mod_list: Vec<Mod>,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Mod {
     pub id: i32,
     pub name: String,
-    pub version: String,
+    pub version: i32,
     pub file_name: String,
     pub file_path: Option<PathBuf>,
 }
