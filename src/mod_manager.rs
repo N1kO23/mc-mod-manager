@@ -51,6 +51,16 @@ impl ModManager {
                 .as_path(),
         );
         let mut mods: Vec<Mod> = Vec::new();
+        for file in file_paths {
+            match ModManager::handle_file(file.clone()) {
+                Ok(addon) => {
+                    mods.push(addon);
+                }
+                Err(e) => {
+                    println!("{}", e);
+                }
+            }
+        }
         return Ok(mods);
     }
 
@@ -93,5 +103,23 @@ impl ModManager {
         // TODO: Search for mods on the local modlist and return them
         let mods = Vec::new();
         return Ok(mods);
+    }
+
+    pub fn fetch_mod(id: i32, version: i32) -> Result<Mod> {
+        // Todo: Check local modlist and return the mod if it exists
+        Ok(Mod {
+            id,
+            version,
+            name: "".to_string(),
+            file_name: "".to_string(),
+            file_path: None,
+        })
+    }
+
+    fn handle_file(file: PathBuf) -> Result<Mod> {
+        let name = file.file_name().unwrap().to_str().unwrap();
+        let mod_id = name.split("-").collect::<Vec<&str>>()[0].parse::<i32>()?;
+        let mod_version = name.split("-").collect::<Vec<&str>>()[1].parse::<i32>()?;
+        Ok(ModManager::fetch_mod(mod_id, mod_version)?)
     }
 }
