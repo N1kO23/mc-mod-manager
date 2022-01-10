@@ -13,29 +13,21 @@ pub struct PrefixManager {
 impl PrefixManager {
     pub fn new() -> Result<PrefixManager> {
         let active_prefix = ConfigManager::load_config()?.active_prefix;
-        match active_prefix {
-            Some(prefix) => {
-                let prefix_manager = PrefixManager { prefix };
-                return Ok(prefix_manager);
-            }
-            None => {
-                let prefix = PrefixManager::create_prefix("default", "Default Author")?;
-                let prefix_manager = PrefixManager { prefix };
-                return Ok(prefix_manager);
-            }
-        }
+        let prefix = PrefixManager::load_prefix(&active_prefix)?;
+        let prefix_manager = PrefixManager { prefix };
+        return Ok(prefix_manager);
     }
 
     /// Saves the prefix to the prefix file
     pub fn save_prefix(prefix: Prefix) -> Result<()> {
-        let file = File::create("prefix.json")?;
+        let file = File::create(format!("prefix-{}.json", prefix.name.clone()))?;
         serde_json::to_writer(file, &prefix)?;
         return Ok(());
     }
 
     /// Loads the prefix file from disk or throws an error if it doesn't exist.
     pub fn load_prefix(name: &str) -> Result<Prefix> {
-        let path_string = format!("./prefixes/{}.json", name);
+        let path_string = format!("prefix-{}.json", name);
         let prefix_file = Path::new(&path_string);
         if !prefix_file.exists() {
             return Err(anyhow::anyhow!("Prefix file does not exist"));
@@ -52,6 +44,7 @@ impl PrefixManager {
             description: String::new(),
             author: author.to_string(),
             version: "0.0.1".to_string(),
+            game_version: "1.12.2".to_string(),
             mod_list: Vec::new(),
         };
         PrefixManager::save_prefix(prefix.clone())?;

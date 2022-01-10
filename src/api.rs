@@ -33,7 +33,12 @@ pub async fn download_addon(
     match downloadable {
         Some(downloadable) => {
             let url = downloadable.download_url.clone();
-            let path = format!("{}-{}.jar", addon.id, downloadable.game_version[0].clone(),);
+            let path = format!(
+                "{}-{}-{}",
+                addon.id,
+                downloadable.game_version[0].clone(),
+                downloadable.file_name
+            );
             check_download_folder(download_path.clone());
             let file_path = download_path.join(path.clone());
             let mut file = File::create(&file_path).unwrap();
@@ -56,9 +61,9 @@ pub async fn download_addon(
 }
 
 /// Get the downloadable file struct if there is any for the given game version.
-fn get_downloadable_addon(addon: &Addon, version: &str) -> Option<DownloadableFile> {
+pub fn get_downloadable_addon(addon: &Addon, version: &str) -> Option<DownloadableFile> {
     for file in &addon.latest_files {
-        if file.game_version[0] == version {
+        if file.game_version.contains(&version.to_string()) {
             return Some(file.clone());
         }
     }

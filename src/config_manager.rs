@@ -1,3 +1,4 @@
+use crate::prefix_manager::PrefixManager;
 use crate::structs::Config;
 use anyhow::Result;
 use std::fs::File;
@@ -35,10 +36,11 @@ impl ConfigManager {
 
     /// Creates a new config file with an empty access token and default backend address.
     pub fn create_config() -> Result<Config> {
+        PrefixManager::create_prefix("default", "Default Author")?;
         let config = Config {
             minecraft_installation_path: PathBuf::new(),
             mod_download_path: PathBuf::new(),
-            active_prefix: None,
+            active_prefix: "default".to_string(),
         };
         ConfigManager::save_config(&config)?;
         return Ok(config);

@@ -25,14 +25,15 @@ impl ArgsHandler {
         match command.as_str() {
             "install" => {
                 self.index += 1;
-                if self.index + 1 >= self.args.len() {
-                    println!("Usage: install <mod_id> <game_version>");
+                if self.index >= self.args.len() {
+                    println!("Usage: install <mod_id>");
                     std::process::exit(0);
                 }
+                let mut prefix_manager = PrefixManager::new()?;
+
                 let mod_id = self.args[self.index].clone();
                 self.index += 1;
-                let game_version = self.args[self.index].clone();
-                self.index += 1;
+                let game_version = prefix_manager.prefix.game_version.clone();
                 let mod_id = mod_id.parse::<i32>()?;
                 let mod_manager = ModManager::new()?;
                 if !mod_manager.is_downloaded(mod_id, game_version.clone()) {
@@ -40,7 +41,6 @@ impl ArgsHandler {
                         .download_mod(mod_id, game_version.clone())
                         .await?;
                 }
-                let mut prefix_manager = PrefixManager::new()?;
                 prefix_manager
                     .add_mod_to_prefix(mod_id, game_version)
                     .await?;
@@ -58,8 +58,7 @@ impl ArgsHandler {
             }
             "update" => {
                 self.index += 1;
-                let mut mod_manager = ModManager::new()?;
-                mod_manager.update_modlist().await?;
+                ModManager::update_modlist().await?;
                 println!("Modlist updated successfully!");
             }
             "list" => {
@@ -80,7 +79,10 @@ impl ArgsHandler {
 
     fn help(&self) {
         println!("{}", "Help");
-        println!("{}", "install <mod_id> <game_version> - Installs the specified version of the specified mod from curseforge");
+        println!(
+            "{}",
+            "install <mod_id> - Installs the specified mod into prefix"
+        );
         println!("{}", "update - Updates the local list of available mods");
         println!(
             "{}",
@@ -92,14 +94,6 @@ impl ArgsHandler {
         );
         println!("{}", "help - Displays this help message and exits program");
         std::process::exit(0);
-    }
-
-    pub fn get_index(&self) -> usize {
-        return self.index;
-    }
-
-    pub fn set_index(&mut self, index: usize) {
-        self.index = index;
     }
 
     pub fn has_next(&self) -> bool {
