@@ -40,11 +40,13 @@ pub async fn download_addon(
                 downloadable.file_name
             );
             check_download_folder(download_path.clone());
+            print!("Downloading to {}... ", path);
             let file_path = download_path.join(path.clone());
             let mut file = File::create(&file_path).unwrap();
             let res_bytes = reqwest::get(url).await?.bytes().await?;
 
             io::copy(&mut res_bytes.as_ref(), &mut file)?;
+            println!("Done!");
 
             return Ok(DownloadedMod {
                 id: addon.id,

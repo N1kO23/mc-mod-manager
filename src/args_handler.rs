@@ -53,7 +53,11 @@ impl ArgsHandler {
                 } else {
                     let mod_name = self.args[self.index].clone();
                     self.index += 1;
-                    println!("{:?}", ModManager::search_mod(&mod_name).await?);
+                    let found_addons = ModManager::search_mod(&mod_name).await?;
+                    for addon in found_addons {
+                        println!("{}\t | {}", addon.id, addon.name);
+                        println!("{}", addon.summary);
+                    }
                 }
             }
             "update" => {
