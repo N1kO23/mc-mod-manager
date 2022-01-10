@@ -55,13 +55,17 @@ impl PrefixManager {
     pub async fn add_mod_to_prefix(&mut self, id: i32, version: String) -> Result<()> {
         let mod_manager = ModManager::new()?;
         let addon = mod_manager.get_mod(id, version)?;
+        if self.prefix.mod_list.contains(&addon.id) {
+            return Err(anyhow::anyhow!("Mod already exists in prefix"));
+        }
         self.prefix.mod_list.push(addon.id);
+        // Todo: Implement copying the mod file into the minecraft mods folder if this is the active prefix
         PrefixManager::save_prefix(self.prefix.clone())?;
         return Ok(());
     }
 
     pub fn remove_mod_from_prefix(&mut self, id: i32) -> Result<()> {
-        // TODO: Implement function that removes the mod from the prefix
+        // TODO: Implement function that removes the mod from the prefix and from the minecraft mods folder if this is the active prefix
         PrefixManager::save_prefix(self.prefix.clone())?;
         return Ok(());
     }
