@@ -26,28 +26,29 @@ impl ArgsHandler {
             "install" => {
                 self.index += 1;
                 if self.index + 1 >= self.args.len() {
-                    println!("Usage: install <mod_id> <mod_version>");
+                    println!("Usage: install <mod_id> <game_version>");
                     std::process::exit(0);
                 }
                 let mod_id = self.args[self.index].clone();
                 self.index += 1;
-                let mod_version = self.args[self.index].clone();
+                let game_version = self.args[self.index].clone();
                 self.index += 1;
                 let mod_id = mod_id.parse::<i32>()?;
-                let mod_version = mod_version.parse::<i32>()?;
                 let mod_manager = ModManager::new()?;
-                if !mod_manager.is_downloaded(mod_id, mod_version) {
-                    mod_manager.download_mod(mod_id, mod_version).await?;
+                if !mod_manager.is_downloaded(mod_id, game_version.clone()) {
+                    mod_manager
+                        .download_mod(mod_id, game_version.clone())
+                        .await?;
                 }
                 let mut prefix_manager = PrefixManager::new()?;
                 prefix_manager
-                    .add_mod_to_prefix(mod_id, mod_version)
+                    .add_mod_to_prefix(mod_id, game_version)
                     .await?;
             }
             "search" => {
                 self.index += 1;
                 if self.index >= self.args.len() {
-                    println!("{}", "Usage is `mmm search <mod_name>`");
+                    println!("{}", "Usage: search <mod_name>");
                     std::process::exit(0);
                 } else {
                     let mod_name = self.args[self.index].clone();
@@ -79,7 +80,7 @@ impl ArgsHandler {
 
     fn help(&self) {
         println!("{}", "Help");
-        println!("{}", "install <mod_id> <mod_version> - Installs the specified version of the specified mod from curseforge");
+        println!("{}", "install <mod_id> <game_version> - Installs the specified version of the specified mod from curseforge");
         println!("{}", "update - Updates the local list of available mods");
         println!(
             "{}",
