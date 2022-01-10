@@ -54,6 +54,7 @@ impl ModManager {
         for file in file_paths {
             match ModManager::handle_file(file.clone()) {
                 Ok(addon) => {
+                    println!("{:?}", addon);
                     mods.push(addon);
                 }
                 Err(e) => {

@@ -33,14 +33,9 @@ pub async fn download_addon(
     match downloadable {
         Some(downloadable) => {
             let url = downloadable.download_url.clone();
-            let path = format!(
-                "{}/{}-{}.jar",
-                download_path.to_string_lossy(),
-                addon.id,
-                downloadable.game_version[0].clone(),
-            );
+            let path = format!("{}-{}.jar", addon.id, downloadable.game_version[0].clone(),);
             check_download_folder(download_path.clone());
-            let file_path = download_path.join(downloadable.file_name.clone());
+            let file_path = download_path.join(path.clone());
             let mut file = File::create(&file_path).unwrap();
             let res_bytes = reqwest::get(url).await?.bytes().await?;
 

@@ -12,14 +12,18 @@ pub struct PrefixManager {
 
 impl PrefixManager {
     pub fn new() -> Result<PrefixManager> {
-        let prefix = PrefixManager::load_prefix(
-            &ConfigManager::load_config()?
-                .active_prefix
-                .unwrap()
-                .name
-                .clone(),
-        )?;
-        return Ok(Self { prefix });
+        let active_prefix = ConfigManager::load_config()?.active_prefix;
+        match active_prefix {
+            Some(prefix) => {
+                let prefix_manager = PrefixManager { prefix };
+                return Ok(prefix_manager);
+            }
+            None => {
+                let prefix = PrefixManager::create_prefix("default", "Default Author")?;
+                let prefix_manager = PrefixManager { prefix };
+                return Ok(prefix_manager);
+            }
+        }
     }
 
     /// Saves the prefix to the prefix file
