@@ -80,10 +80,17 @@ impl ModManager {
         return false;
     }
 
-    pub async fn download_mod(&self, id: i32, version: String) -> Result<DownloadedMod> {
+    pub async fn download_mod(
+        &self,
+        id: i32,
+        version: String,
+        modloader: String,
+    ) -> Result<DownloadedMod> {
         // Todo: Download mod from backend and add to downloaded_mods
         let mod_info = api::fetch_addon(id).await?;
-        let addon = api::download_addon(mod_info, version, self.mod_download_path.clone()).await?;
+        let addon =
+            api::download_addon(mod_info, version, self.mod_download_path.clone(), modloader)
+                .await?;
         return Ok(addon);
     }
 

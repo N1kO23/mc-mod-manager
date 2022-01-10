@@ -44,8 +44,9 @@ impl PrefixManager {
             description: String::new(),
             author: author.to_string(),
             version: "0.0.1".to_string(),
-            game_version: "1.12.2".to_string(),
+            game_version: "1.18.1".to_string(),
             mod_list: Vec::new(),
+            mod_loader: "Forge".to_string(),
         };
         PrefixManager::save_prefix(prefix.clone())?;
         return Ok(prefix);
@@ -54,10 +55,12 @@ impl PrefixManager {
     pub async fn add_mod_to_prefix(&mut self, id: i32, version: String) -> Result<()> {
         let mod_manager = ModManager::new()?;
         if !mod_manager.is_downloaded(id, version.clone()) {
-            mod_manager.download_mod(id, version.clone()).await?;
+            mod_manager
+                .download_mod(id, version.clone(), self.prefix.mod_loader.clone())
+                .await?;
         }
         let addon = mod_manager.get_mod(id, version)?;
-        self.prefix.mod_list.push(addon);
+        self.prefix.mod_list.push(addon.id);
         PrefixManager::save_prefix(self.prefix.clone())?;
         return Ok(());
     }

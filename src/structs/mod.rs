@@ -57,8 +57,9 @@ pub struct Prefix {
     pub description: String,
     pub author: String,
     pub version: String,
-    pub mod_list: Vec<DownloadedMod>,
+    pub mod_list: Vec<i32>,
     pub game_version: String,
+    pub mod_loader: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

@@ -38,7 +38,11 @@ impl ArgsHandler {
                 let mod_manager = ModManager::new()?;
                 if !mod_manager.is_downloaded(mod_id, game_version.clone()) {
                     mod_manager
-                        .download_mod(mod_id, game_version.clone())
+                        .download_mod(
+                            mod_id,
+                            game_version.clone(),
+                            prefix_manager.prefix.mod_loader.clone(),
+                        )
                         .await?;
                 }
                 prefix_manager

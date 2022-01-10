@@ -27,9 +27,10 @@ pub async fn download_addon(
     addon: Addon,
     game_version: String,
     download_path: PathBuf,
+    modloader: String,
 ) -> Result<DownloadedMod> {
     // Figure out the actual api endpoint for this.
-    let downloadable = get_downloadable_addon(&addon, &game_version);
+    let downloadable = get_downloadable_addon(&addon, &game_version, &modloader);
     match downloadable {
         Some(downloadable) => {
             let url = downloadable.download_url.clone();
@@ -63,9 +64,15 @@ pub async fn download_addon(
 }
 
 /// Get the downloadable file struct if there is any for the given game version.
-pub fn get_downloadable_addon(addon: &Addon, version: &str) -> Option<DownloadableFile> {
+pub fn get_downloadable_addon(
+    addon: &Addon,
+    version: &str,
+    modloader: &str,
+) -> Option<DownloadableFile> {
     for file in &addon.latest_files {
-        if file.game_version.contains(&version.to_string()) {
+        if file.game_version.contains(&version.to_string())
+            && file.game_version.contains(&modloader.to_string())
+        {
             return Some(file.clone());
         }
     }
