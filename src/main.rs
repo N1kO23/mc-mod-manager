@@ -7,6 +7,7 @@ mod config_manager;
 mod mod_manager;
 mod prefix_manager;
 mod structs;
+mod util;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -15,7 +16,5 @@ async fn main() -> anyhow::Result<()> {
     while args_handler.has_next() {
         args_handler.execute_next().await?;
     }
-    // println!("Searching for mod with ID \"{}\"", "32358");
-    // println!("{:?}", api::search_addon(32358).await?);
     Ok(())
 }

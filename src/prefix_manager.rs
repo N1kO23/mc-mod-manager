@@ -54,11 +54,6 @@ impl PrefixManager {
 
     pub async fn add_mod_to_prefix(&mut self, id: i32, version: String) -> Result<()> {
         let mod_manager = ModManager::new()?;
-        if !mod_manager.is_downloaded(id, version.clone()) {
-            mod_manager
-                .download_mod(id, version.clone(), self.prefix.mod_loader.clone())
-                .await?;
-        }
         let addon = mod_manager.get_mod(id, version)?;
         self.prefix.mod_list.push(addon.id);
         PrefixManager::save_prefix(self.prefix.clone())?;

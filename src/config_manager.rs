@@ -3,6 +3,7 @@ use crate::structs::Config;
 use anyhow::Result;
 use std::fs::File;
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 
 pub struct ConfigManager {
     pub config: Config,
@@ -39,7 +40,7 @@ impl ConfigManager {
         PrefixManager::create_prefix("default", "Default Author")?;
         let config = Config {
             minecraft_installation_path: PathBuf::new(),
-            mod_download_path: PathBuf::new(),
+            mod_download_path: PathBuf::from_str("./downloads")?,
             active_prefix: "default".to_string(),
         };
         ConfigManager::save_config(&config)?;

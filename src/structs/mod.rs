@@ -19,7 +19,6 @@ pub struct Addon {
     pub website_url: String,
     pub summary: String,
     pub status: i32,
-    pub game_id: i32,
     pub primary_category_id: i32,
     pub download_count: f32,
     pub popularity_score: f32,
@@ -66,7 +65,7 @@ pub struct Prefix {
 pub struct DownloadedMod {
     pub id: i32,
     pub name: String,
-    pub version: String,
+    pub version: Vec<String>,
     pub file_name: String,
     pub file_path: Option<PathBuf>,
 }

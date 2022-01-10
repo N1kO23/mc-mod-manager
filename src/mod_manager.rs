@@ -2,6 +2,7 @@ use crate::api;
 use crate::config_manager::ConfigManager;
 use crate::prefix_manager::PrefixManager;
 use crate::structs::{Addon, DownloadedMod, Prefix};
+use crate::util::{string_to_array, subvec};
 use anyhow::Result;
 use std::fs::{self, File};
 use std::path::{Path, PathBuf};
@@ -10,7 +11,6 @@ pub struct ModManager {
     pub active_prefix: Prefix,
     pub downloaded_mods: Vec<DownloadedMod>,
     pub mod_download_path: PathBuf,
-    pub modlist: Vec<Addon>,
 }
 
 impl ModManager {
@@ -20,12 +20,10 @@ impl ModManager {
         let active_prefix = PrefixManager::load_prefix(&config.active_prefix.clone())?;
         let downloaded_mods = ModManager::get_downloaded_mods()?;
         let mod_download_path = config.mod_download_path.clone();
-        let modlist = ModManager::load_modlist()?;
         return Ok(Self {
             active_prefix,
             downloaded_mods,
             mod_download_path,
-            modlist,
         });
     }
 
@@ -72,7 +70,7 @@ impl ModManager {
         let mods = self.downloaded_mods.clone();
         for r#mod in mods {
             if r#mod.id == id {
-                if r#mod.version == version {
+                if r#mod.version.contains(&version) {
                     return true;
                 }
             }
@@ -81,7 +79,7 @@ impl ModManager {
     }
 
     pub async fn download_mod(
-        &self,
+        &mut self,
         id: i32,
         version: String,
         modloader: String,
@@ -91,39 +89,14 @@ impl ModManager {
         let addon =
             api::download_addon(mod_info, version, self.mod_download_path.clone(), modloader)
                 .await?;
+        self.downloaded_mods = ModManager::get_downloaded_mods()?;
         return Ok(addon);
-    }
-
-    pub async fn update_modlist() -> Result<()> {
-        // Todo: Update local listing of available mods in api
-        println!("Updating modlist...");
-        let addons = api::fetch_addons().await?;
-        ModManager::save_modlist(&addons)?;
-        println!("{:?}", addons);
-        Ok(())
-    }
-
-    fn save_modlist(addons: &Vec<Addon>) -> Result<()> {
-        let file = File::create("modlist")?;
-        serde_json::to_writer(file, addons)?;
-        return Ok(());
-    }
-
-    fn load_modlist() -> Result<Vec<Addon>> {
-        let path = Path::new("modlist");
-        if !path.exists() {
-            println!("No modlist found, creating one...");
-            futures::executor::block_on(ModManager::update_modlist())?;
-        }
-        let file = File::open("modlist")?;
-        let addons: Vec<Addon> = serde_json::from_reader(file)?;
-        return Ok(addons);
     }
 
     pub fn get_mod(&self, id: i32, version: String) -> Result<DownloadedMod> {
         for r#mod in self.downloaded_mods.clone() {
             if r#mod.id == id {
-                if r#mod.version == version {
+                if r#mod.version.contains(&version) {
                     return Ok(r#mod);
                 }
             }
@@ -133,7 +106,8 @@ impl ModManager {
 
     pub async fn search_mod(name: &str) -> Result<Vec<Addon>> {
         // TODO: Search for mods on the local modlist and return them
-        let modlist = ModManager::load_modlist()?;
+        // let modlist = ModManager::load_modlist()?;
+        let modlist = api::search_addon(name).await?;
         let mut mods = Vec::new();
         let name = name.to_lowercase();
         for r#mod in modlist {
@@ -141,34 +115,28 @@ impl ModManager {
                 mods.push(r#mod);
             }
         }
+        mods.reverse();
         return Ok(mods);
     }
 
     pub fn fetch_mod(id: i32) -> Result<Addon> {
-        // Todo: Check local modlist and return the mod if it exists
-        let modlist = ModManager::load_modlist()?;
-        for r#mod in modlist {
-            if r#mod.id == id {
-                return Ok(r#mod);
-            }
-        }
-        return Err(anyhow::anyhow!("Mod not found"));
+        return Ok(futures::executor::block_on(api::fetch_addon(id))?);
     }
 
     fn handle_file(file: PathBuf) -> Result<DownloadedMod> {
         let name = file.file_name().unwrap().to_str().unwrap();
-        let filename_array = name.split("-").collect::<Vec<&str>>();
-        if filename_array.len() != 3 {
+        let filename_array = string_to_array(name, ";");
+        if filename_array.len() < 4 {
             return Err(anyhow::anyhow!("Invalid filename"));
         }
         let mod_id = filename_array[0].parse::<i32>()?;
-        let mc_version = filename_array[1];
-        let file_name = filename_array[2];
-        let addon = ModManager::fetch_mod(mod_id)?;
+        let mod_name = filename_array[1].clone();
+        let file_name = filename_array[2].clone();
+        let mc_version = subvec(&filename_array, 3, filename_array.len());
         let downloaded_mod = DownloadedMod {
-            id: addon.id,
-            name: addon.name,
-            version: mc_version.to_string(),
+            id: mod_id,
+            name: mod_name.to_string(),
+            version: mc_version,
             file_path: Some(file.clone()),
             file_name: file_name.to_string(),
         };
