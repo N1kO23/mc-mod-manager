@@ -69,7 +69,7 @@ pub async fn search_addon(keyword: &str) -> Result<Vec<Addon>> {
 
 /// Download the actual mod from the api
 pub async fn download_addon(
-    addon: Addon,
+    addon: &Addon,
     game_version: String,
     download_path: PathBuf,
     modloader: String,
@@ -95,7 +95,7 @@ pub async fn download_addon(
             return Ok(DownloadedMod {
                 id: addon.id,
                 version: downloadable.game_version.clone(),
-                name: addon.name,
+                name: addon.name.clone(),
                 file_name: downloadable.file_name,
                 file_path: Some(file_path),
             });

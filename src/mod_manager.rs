@@ -86,17 +86,21 @@ impl ModManager {
     ) -> Result<DownloadedMod> {
         // Todo: Download mod from backend and add to downloaded_mods
         let mod_info = api::fetch_addon(id).await?;
-        let addon =
-            api::download_addon(mod_info, version, self.mod_download_path.clone(), modloader)
-                .await?;
+        let addon = api::download_addon(
+            &mod_info,
+            version,
+            self.mod_download_path.clone(),
+            modloader,
+        )
+        .await?;
         self.downloaded_mods = ModManager::get_downloaded_mods()?;
         return Ok(addon);
     }
 
-    pub fn get_mod(&self, id: i32, version: String) -> Result<DownloadedMod> {
+    pub fn get_mod(&self, id: i32, version: &String) -> Result<DownloadedMod> {
         for r#mod in self.downloaded_mods.clone() {
             if r#mod.id == id {
-                if r#mod.version.contains(&version) {
+                if r#mod.version.contains(version) {
                     return Ok(r#mod);
                 }
             }
