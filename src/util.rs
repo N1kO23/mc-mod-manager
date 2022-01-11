@@ -1,3 +1,5 @@
+use std::io::{self, stdin, stdout, Write};
+
 pub fn concat_string_array(arr: Vec<String>, separator: &str) -> String {
     let mut joined_args = String::new();
     for i in 0..arr.len() {
@@ -6,7 +8,7 @@ pub fn concat_string_array(arr: Vec<String>, separator: &str) -> String {
             joined_args.push_str(separator);
         }
     }
-    return joined_args;
+    joined_args
 }
 
 pub fn string_to_array(str: &str, separator: &str) -> Vec<String> {
@@ -23,5 +25,15 @@ pub fn subvec(main: &Vec<String>, startindex: usize, endindex: usize) -> Vec<Str
     for i in startindex..endindex {
         sub.push(main[i].clone());
     }
-    return sub;
+    sub
+}
+
+pub fn read_line() -> io::Result<String> {
+    stdout().flush()?;
+    let mut input = String::new();
+    stdin().read_line(&mut input)?;
+    match input.trim() {
+        "" => Err(io::Error::new(io::ErrorKind::InvalidInput, "Empty input")),
+        _ => Ok(input.trim().to_string()),
+    }
 }
