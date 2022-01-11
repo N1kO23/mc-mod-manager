@@ -95,6 +95,50 @@ impl ArgsHandler {
                 self.index += 1;
                 self.help();
             }
+            "prefix" => {
+                self.index += 1;
+                match self.args[self.index].clone().as_str() {
+                    "new" => {
+                        self.index += 1;
+                        if self.index >= self.args.len() {
+                            println!("Usage: prefix new <prefix_name>");
+                            std::process::exit(0);
+                        }
+                        let prefix_name = self.join_args_string();
+                        PrefixManager::new_prefix_form(&prefix_name)?;
+                    }
+                    "set" => {
+                        self.index += 1;
+                        if self.index >= self.args.len() {
+                            println!("Usage: prefix set <prefix_name>");
+                            std::process::exit(0);
+                        }
+                        let prefix_name = self.join_args_string();
+                        // PrefixManager::set_prefix(prefix_name, prefix_path)?;
+                    }
+                    "list" => {
+                        self.index += 1;
+                        let prefix_manager = PrefixManager::new()?;
+                        // let prefixes = prefix_manager.get_prefixes()?;
+                        // for prefix in prefixes {
+                        //     println!("{}", prefix.name);
+                        // }
+                    }
+                    "delete" => {
+                        self.index += 1;
+                        if self.index >= self.args.len() {
+                            println!("Usage: prefix delete <prefix_name>");
+                            std::process::exit(0);
+                        }
+                        let prefix_name = self.join_args_string();
+                        // PrefixManager::delete_prefix(prefix_name)?;
+                    }
+                    _ => {
+                        println!("Usage: prefix <set|list|delete> <prefix_name>");
+                        std::process::exit(0);
+                    }
+                }
+            }
             _ => {
                 println!("{}", "Invalid command");
                 self.help();
