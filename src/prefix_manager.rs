@@ -71,6 +71,15 @@ impl PrefixManager {
         return Ok(());
     }
 
+    pub fn set_prefix(name: &str) -> Result<Prefix> {
+        let prefix = PrefixManager::load_prefix(name)?;
+        let mut config = ConfigManager::load_config()?;
+        config.active_prefix = name.to_string();
+        ConfigManager::save_config(&config)?;
+        println!("Prefix set to {}", name);
+        return Ok(prefix);
+    }
+
     pub fn new_prefix_form(name: &str) -> Result<Prefix> {
         print!("{}", "Enter the author of the prefix (default: 'author'): ");
         let author = read_line().unwrap_or("author".to_string());

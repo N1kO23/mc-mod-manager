@@ -114,7 +114,7 @@ impl ArgsHandler {
                             std::process::exit(0);
                         }
                         let prefix_name = self.join_args_string();
-                        // PrefixManager::set_prefix(prefix_name, prefix_path)?;
+                        PrefixManager::set_prefix(&prefix_name)?;
                     }
                     "list" => {
                         self.index += 1;
