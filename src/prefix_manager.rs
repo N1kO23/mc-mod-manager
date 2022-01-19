@@ -38,6 +38,30 @@ impl PrefixManager {
         }
     }
 
+    /// Loads all prefixes from disk into array and returns it.
+    pub fn load_all_prefixes() -> Result<Vec<Prefix>> {
+        let mut prefixes: Vec<Prefix> = Vec::new();
+        // TODO: Specify the path to folder that holds prefixes in config
+        let prefix_files = std::fs::read_dir(".")?;
+        for prefix_file in prefix_files {
+            let prefix_file = prefix_file?;
+            let prefix_file_name = prefix_file.file_name();
+            let prefix_file_name = prefix_file_name.to_str().unwrap();
+            if prefix_file_name.starts_with("prefix-") && prefix_file_name.ends_with(".json") {
+                let prefix_file_name = prefix_file_name.replace("prefix-", "").replace(".json", "");
+                match PrefixManager::load_prefix(&prefix_file_name) {
+                    Ok(prefix) => {
+                        prefixes.push(prefix);
+                    }
+                    Err(e) => {
+                        println!("Error loading prefix {}: {}", &prefix_file_name, e);
+                    }
+                }
+            }
+        }
+        return Ok(prefixes);
+    }
+
     /// Creates a new prefix file with an empty access token and default backend address.
     pub fn create_prefix(name: &str, author: &str) -> Result<Prefix> {
         let prefix = Prefix {

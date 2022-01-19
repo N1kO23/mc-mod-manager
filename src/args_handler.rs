@@ -118,11 +118,15 @@ impl ArgsHandler {
                     }
                     "list" => {
                         self.index += 1;
-                        let prefix_manager = PrefixManager::new()?;
-                        // let prefixes = prefix_manager.get_prefixes()?;
-                        // for prefix in prefixes {
-                        //     println!("{}", prefix.name);
-                        // }
+                        let prefixes = PrefixManager::load_all_prefixes()?;
+                        for prefix in prefixes {
+                            println!(
+                                " - {} ({} mods) [{}]",
+                                prefix.name,
+                                prefix.mod_list.len(),
+                                prefix.game_version
+                            );
+                        }
                     }
                     "delete" => {
                         self.index += 1;
